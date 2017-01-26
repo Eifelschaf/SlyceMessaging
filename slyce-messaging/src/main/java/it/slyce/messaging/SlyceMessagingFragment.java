@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.TypedArray;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -76,6 +77,8 @@ public class SlyceMessagingFragment extends Fragment implements OnClickListener 
     private Refresher mRefresher;
 
     private String defaultAvatarUrl;
+    private Object defaultAvatarSource;
+    private Drawable defaultAvatarPlaceholder;
     private String defaultDisplayName;
     private String defaultUserId;
     private int startHereWhenUpdate;
@@ -99,7 +102,7 @@ public class SlyceMessagingFragment extends Fragment implements OnClickListener 
     }
 
     private void removeSpinner() {
-        if (mMessages.get(0) instanceof SpinnerMessage) {
+        if (!mMessages.isEmpty() && mMessages.get(0) instanceof SpinnerMessage) {
             mMessages.remove(0);
             mMessageItems.remove(0);
             mRecyclerAdapter.notifyItemRemoved(0);
@@ -132,6 +135,14 @@ public class SlyceMessagingFragment extends Fragment implements OnClickListener 
 
     public void setDefaultDisplayName(String defaultDisplayName) {
         this.defaultDisplayName = defaultDisplayName;
+    }
+
+    public void setDefaultAvatarSource(Object defaultAvatarSource) {
+        this.defaultAvatarSource = defaultAvatarSource;
+    }
+
+    public void setDefaultAvatarPlaceholder(Drawable defaultAvatarPlaceholder) {
+        this.defaultAvatarPlaceholder = defaultAvatarPlaceholder;
     }
 
     public void setDefaultUserId(String defaultUserId) {
@@ -422,6 +433,8 @@ public class SlyceMessagingFragment extends Fragment implements OnClickListener 
                 message.setDisplayName(this.defaultDisplayName);
                 message.setSource(MessageSource.LOCAL_USER);
                 message.setAvatarUrl(this.defaultAvatarUrl);
+                message.setAvatarSource(this.defaultAvatarSource);
+                message.setAvatarPlaceholder(this.defaultAvatarPlaceholder);
                 message.setUserId(this.defaultUserId);
                 addNewMessage(message);
                 ScrollUtils.scrollToBottomAfterDelay(mRecyclerView, mRecyclerAdapter);
@@ -444,6 +457,8 @@ public class SlyceMessagingFragment extends Fragment implements OnClickListener 
         TextMessage message = new TextMessage();
         message.setDate(System.currentTimeMillis());
         message.setAvatarUrl(defaultAvatarUrl);
+        message.setAvatarSource(defaultAvatarSource);
+        message.setAvatarPlaceholder(defaultAvatarPlaceholder);
         message.setSource(MessageSource.LOCAL_USER);
         message.setDisplayName(defaultDisplayName);
         message.setText(text);

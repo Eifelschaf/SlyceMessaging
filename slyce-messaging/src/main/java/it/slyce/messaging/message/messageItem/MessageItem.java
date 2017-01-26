@@ -14,6 +14,7 @@ public abstract class MessageItem {
     protected boolean isLastConsecutiveMessageFromSource;
 
     protected String avatarUrl;
+    protected Object avatarSource;
     protected String initials;
     protected Message message;
     protected String date;

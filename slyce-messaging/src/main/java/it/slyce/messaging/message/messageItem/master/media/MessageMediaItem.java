@@ -2,10 +2,13 @@ package it.slyce.messaging.message.messageItem.master.media;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 import android.view.View;
 
+import com.bumptech.glide.DrawableTypeRequest;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestManager;
 
 import it.slyce.messaging.message.MediaMessage;
 import it.slyce.messaging.message.MessageSource;
@@ -31,7 +34,7 @@ public abstract class MessageMediaItem extends MessageItem {
     public void buildMessageItem(
             MessageViewHolder messageViewHolder) {
 
-        if (message != null &&  messageViewHolder != null && messageViewHolder instanceof MessageMediaViewHolder) {
+        if (message != null && messageViewHolder != null && messageViewHolder instanceof MessageMediaViewHolder) {
 
             final MessageMediaViewHolder messageMediaViewHolder = (MessageMediaViewHolder) messageViewHolder;
 
@@ -40,7 +43,24 @@ public abstract class MessageMediaItem extends MessageItem {
             date = DateUtils.getTimestamp(context, message.getDate());
             final String mediaUrl = getMediaMessage().getUrl();
             this.avatarUrl = message.getAvatarUrl();
+            this.avatarSource = message.getAvatarSource();
 
+            if (isFirstConsecutiveMessageFromSource) {
+                RequestManager requestManager = Glide.with(context);
+                DrawableTypeRequest loadRequest = null;
+                if (this.avatarUrl != null) {
+                    loadRequest = requestManager.load(avatarUrl);
+                } else if (this.avatarSource != null) {
+                    loadRequest = requestManager.load(avatarSource);
+                }
+                if(loadRequest != null) {
+                    Drawable placeholder = message.getAvatarPlaceholder();
+                    if(placeholder != null) {
+                        loadRequest.placeholder(placeholder);
+                    }
+                    loadRequest.into(messageMediaViewHolder.avatar);
+                }
+            }
             // Populate views with content
             messageMediaViewHolder.timestamp.setText(date != null ? date : "");
             messageMediaViewHolder.initials.setText(initials != null ? initials : "");
@@ -48,15 +68,12 @@ public abstract class MessageMediaItem extends MessageItem {
             messageMediaViewHolder.media.setWidthToHeightRatio(widthToHeightRatio);
             messageMediaViewHolder.media.setImageUrlToLoadOnLayout(mediaUrl);
 
-            if (isFirstConsecutiveMessageFromSource) {
-                Glide.with(context).load(avatarUrl).into(messageMediaViewHolder.avatar);
-            }
-
             messageViewHolder.avatar.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                    if (messageMediaViewHolder.customSettings.userClicksAvatarPictureListener != null)
+                @Override
+                public void onClick(View view) {
+                    if (messageMediaViewHolder.customSettings.userClicksAvatarPictureListener != null) {
                         messageMediaViewHolder.customSettings.userClicksAvatarPictureListener.userClicksAvatarPhoto(message.getUserId());
+                    }
                 }
             });
 
@@ -70,9 +87,9 @@ public abstract class MessageMediaItem extends MessageItem {
                 }
             });
 
-            messageMediaViewHolder.avatar.setVisibility(isFirstConsecutiveMessageFromSource && !TextUtils.isEmpty(avatarUrl) ? View.VISIBLE : View.INVISIBLE);
+            messageMediaViewHolder.avatar.setVisibility(isFirstConsecutiveMessageFromSource && (!TextUtils.isEmpty(avatarUrl) || avatarSource != null)  ? View.VISIBLE : View.INVISIBLE);
             messageMediaViewHolder.avatarContainer.setVisibility(isFirstConsecutiveMessageFromSource ? View.VISIBLE : View.INVISIBLE);
-            messageMediaViewHolder.initials.setVisibility(isFirstConsecutiveMessageFromSource && TextUtils.isEmpty(avatarUrl) ? View.VISIBLE : View.GONE);
+            messageMediaViewHolder.initials.setVisibility(isFirstConsecutiveMessageFromSource && (TextUtils.isEmpty(avatarUrl) && avatarSource == null) ? View.VISIBLE : View.GONE);
             messageMediaViewHolder.media.setVisibility(!TextUtils.isEmpty(mediaUrl) ? View.VISIBLE : View.INVISIBLE);
             messageMediaViewHolder.timestamp.setVisibility(isLastConsecutiveMessageFromSource ? View.VISIBLE : View.GONE);
         }
@@ -93,7 +110,7 @@ public abstract class MessageMediaItem extends MessageItem {
     }
 
     public MediaMessage getMediaMessage() {
-        return (MediaMessage)message;
+        return (MediaMessage) message;
     }
 
     public boolean dateNeedsUpdated(long time) {

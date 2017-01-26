@@ -3,12 +3,15 @@ package it.slyce.messaging.message.messageItem.master.text;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.os.Vibrator;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.Toast;
 
+import com.bumptech.glide.DrawableTypeRequest;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestManager;
 
 import it.slyce.messaging.R;
 import it.slyce.messaging.message.MessageSource;
@@ -41,6 +44,25 @@ public class MessageTextItem extends MessageItem {
             String date = DateUtils.getTimestamp(context, message.getDate());
             String text = ((TextMessage)message).getText();
             this.avatarUrl = message.getAvatarUrl();
+            this.avatarSource = message.getAvatarSource();
+
+            if (isFirstConsecutiveMessageFromSource) {
+                RequestManager requestManager = Glide.with(context);
+                DrawableTypeRequest loadRequest = null;
+                if (this.avatarUrl != null) {
+                    loadRequest = requestManager.load(avatarUrl);
+                } else if (this.avatarSource != null) {
+                    loadRequest = requestManager.load(avatarSource);
+                }
+                if(loadRequest != null) {
+                    Drawable placeholder = message.getAvatarPlaceholder();
+                    if(placeholder != null) {
+                        loadRequest.placeholder(placeholder);
+                    }
+                    loadRequest.into(messageTextViewHolder.avatar);
+                }
+            }
+
             this.initials = message.getInitials();
 
             // Populate views with content
@@ -71,14 +93,10 @@ public class MessageTextItem extends MessageItem {
                 }
             });
 
-            if (isFirstConsecutiveMessageFromSource) {
-                Glide.with(context).load(avatarUrl).into(messageTextViewHolder.avatar);
-            }
-
-            messageTextViewHolder.avatar.setVisibility(isFirstConsecutiveMessageFromSource && !TextUtils.isEmpty(avatarUrl) ? View.VISIBLE : View.INVISIBLE);
+            messageTextViewHolder.avatar.setVisibility(isFirstConsecutiveMessageFromSource && (!TextUtils.isEmpty(avatarUrl) || avatarSource != null) ? View.VISIBLE : View.INVISIBLE);
             messageTextViewHolder.avatarContainer.setVisibility(isFirstConsecutiveMessageFromSource ? View.VISIBLE : View.INVISIBLE);
             messageTextViewHolder.carrot.setVisibility(isFirstConsecutiveMessageFromSource ? View.VISIBLE : View.INVISIBLE);
-            messageTextViewHolder.initials.setVisibility(isFirstConsecutiveMessageFromSource && TextUtils.isEmpty(avatarUrl) ? View.VISIBLE : View.GONE);
+            messageTextViewHolder.initials.setVisibility(isFirstConsecutiveMessageFromSource && (TextUtils.isEmpty(avatarUrl) && avatarSource == null) ? View.VISIBLE : View.GONE);
             messageTextViewHolder.timestamp.setVisibility(isLastConsecutiveMessageFromSource ? View.VISIBLE : View.GONE);
         }
     }

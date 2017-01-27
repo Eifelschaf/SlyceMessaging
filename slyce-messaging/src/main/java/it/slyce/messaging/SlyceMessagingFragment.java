@@ -17,7 +17,9 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -34,11 +36,14 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import it.slyce.messaging.listeners.LoadMoreMessagesListener;
+import it.slyce.messaging.listeners.TypingListener;
 import it.slyce.messaging.listeners.UserClicksAvatarPictureListener;
 import it.slyce.messaging.listeners.UserSendsMessageListener;
 import it.slyce.messaging.message.MediaMessage;
@@ -62,6 +67,8 @@ import it.slyce.messaging.view.ViewUtils;
 public class SlyceMessagingFragment extends Fragment implements OnClickListener {
 
     private static final int START_RELOADING_DATA_AT_SCROLL_VALUE = 5000; // TODO: maybe change this? make it customizable?
+    private static final int TYPE_DELAY = 2000;
+    private Timer typingTimer;
 
     private EditText mEntryField;
     private LinearLayoutManager mLinearLayoutManager;
@@ -73,6 +80,7 @@ public class SlyceMessagingFragment extends Fragment implements OnClickListener 
 
     private LoadMoreMessagesListener loadMoreMessagesListener;
     private UserSendsMessageListener listener;
+    private TypingListener typingListener;
     private CustomSettings customSettings;
     private Refresher mRefresher;
 
@@ -123,6 +131,10 @@ public class SlyceMessagingFragment extends Fragment implements OnClickListener 
     public void setLoadMoreMessagesListener(LoadMoreMessagesListener loadMoreMessagesListener) {
         this.loadMoreMessagesListener = loadMoreMessagesListener;
         loadMoreMessagesIfNecessary();
+    }
+
+    public void setTypingListener(TypingListener typingListener) {
+        this.typingListener = typingListener;
     }
 
     public void setUserClicksAvatarPictureListener(UserClicksAvatarPictureListener userClicksAvatarPictureListener) {
@@ -189,6 +201,35 @@ public class SlyceMessagingFragment extends Fragment implements OnClickListener 
 
         // Setup views
         mEntryField = (EditText) rootView.findViewById(R.id.slyce_messaging_edit_text_entry_field);
+        mEntryField.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (typingListener != null) {
+                    if (typingTimer != null) {
+                        typingTimer.cancel();
+                    }
+                    typingTimer = new Timer();
+                    typingListener.typingStarted();
+                    //start a timer
+                    typingTimer.schedule(new TimerTask() {
+                        @Override
+                        public void run() {
+                            typingListener.typingEnded();
+                        }
+                    }, TYPE_DELAY);
+                }
+            }
+        });
         ImageView mSendButton = (ImageView) rootView.findViewById(R.id.slyce_messaging_image_view_send);
         ImageView mSnapButton = (ImageView) rootView.findViewById(R.id.slyce_messaging_image_view_snap);
         mRecyclerView = (RecyclerView) rootView.findViewById(R.id.slyce_messaging_recycler_view);
@@ -349,7 +390,7 @@ public class SlyceMessagingFragment extends Fragment implements OnClickListener 
             return false;
         } else {
             return scrollOffset < START_RELOADING_DATA_AT_SCROLL_VALUE &&
-                    recentUpdatedTime + 1000 < new Date().getTime();
+                    recentUpdatedTime + 1000 < System.currentTimeMillis();
         }
     }
 

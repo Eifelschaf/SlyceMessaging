@@ -67,8 +67,10 @@ import it.slyce.messaging.view.ViewUtils;
 public class SlyceMessagingFragment extends Fragment implements OnClickListener {
 
     private static final int START_RELOADING_DATA_AT_SCROLL_VALUE = 5000; // TODO: maybe change this? make it customizable?
-    private static final int TYPE_DELAY = 2000;
+    private static final long TYPE_DELAY = android.text.format.DateUtils.SECOND_IN_MILLIS;
+
     private Timer typingTimer;
+    private long lastLetterTyped = 0;
 
     private EditText mEntryField;
     private LinearLayoutManager mLinearLayoutManager;
@@ -218,8 +220,12 @@ public class SlyceMessagingFragment extends Fragment implements OnClickListener 
                     if (typingTimer != null) {
                         typingTimer.cancel();
                     }
+                    //only send the typing message if the end message has been sent
+                    if(lastLetterTyped + TYPE_DELAY < System.currentTimeMillis()) {
+                        typingListener.typingStarted();
+                    }
+                    lastLetterTyped = System.currentTimeMillis();
                     typingTimer = new Timer();
-                    typingListener.typingStarted();
                     //start a timer
                     typingTimer.schedule(new TimerTask() {
                         @Override

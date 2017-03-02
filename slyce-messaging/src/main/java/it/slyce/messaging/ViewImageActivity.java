@@ -18,8 +18,11 @@ public class ViewImageActivity extends AppCompatActivity {
 
         Bundle extras = getIntent().getExtras();
         final String url = extras.getString("URL", null);
+        final Object source = extras.getParcelable("SOURCE");
         final ImageView imageView = (ImageView) findViewById(R.id.image_view_large);
-        if (url != null) {
+        if(source != null) {
+            Glide.with(getApplicationContext()).load(source).into(imageView);
+        } else if (url != null) {
             Glide.with(getApplicationContext()).load(url).into(imageView);
         }
         assert imageView != null;

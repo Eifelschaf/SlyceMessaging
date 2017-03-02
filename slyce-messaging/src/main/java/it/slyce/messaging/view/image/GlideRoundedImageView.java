@@ -16,6 +16,7 @@ public class GlideRoundedImageView extends FixedAspectRatioRoundedImageView {
     private boolean mHasStartedImageLoad;
     private boolean mViewHasLaidOut;
     private String mSourceImageUrl;
+    private Object mSourceImageSource;
 
     public GlideRoundedImageView(Context context) {
         super(context);
@@ -62,6 +63,16 @@ public class GlideRoundedImageView extends FixedAspectRatioRoundedImageView {
         }
     }
 
+    public void setImageSourceToLoadOnLayout(Object imageSource) {
+
+        // If the image URL is new, attempt to load it
+        if (mSourceImageSource == null || !mSourceImageSource.equals(imageSource)) {
+            mSourceImageSource = imageSource;
+            // Load the URL
+            loadImageSource();
+        }
+    }
+
     private void loadImageUrl() {
         // If the view has been laid out (has width/height), and hasn't been loaded yet, attempt to load it
         if (mViewHasLaidOut && !mHasStartedImageLoad && !TextUtils.isEmpty(mSourceImageUrl)) {
@@ -69,6 +80,23 @@ public class GlideRoundedImageView extends FixedAspectRatioRoundedImageView {
                 Glide
                         .with(getContext())
                         .load(mSourceImageUrl)
+                        .centerCrop()
+                        .error(R.drawable.shape_rounded_rectangle_gray)
+                        .placeholder(R.drawable.shape_rounded_rectangle_gray)
+                        .into(this);
+            } else {
+                setImageResource(R.drawable.shape_rounded_rectangle_gray);
+            }
+        }
+    }
+
+    private void loadImageSource() {
+        // If the view has been laid out (has width/height), and hasn't been loaded yet, attempt to load it
+        if (mViewHasLaidOut && !mHasStartedImageLoad && mSourceImageSource != null) {
+            if (mSourceImageUrl != null) {
+                Glide
+                        .with(getContext())
+                        .load(mSourceImageSource)
                         .centerCrop()
                         .error(R.drawable.shape_rounded_rectangle_gray)
                         .placeholder(R.drawable.shape_rounded_rectangle_gray)

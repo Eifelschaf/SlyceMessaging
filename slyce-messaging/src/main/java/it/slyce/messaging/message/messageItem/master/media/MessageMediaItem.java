@@ -3,6 +3,7 @@ package it.slyce.messaging.message.messageItem.master.media;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
+import android.os.Parcelable;
 import android.text.TextUtils;
 import android.view.View;
 
@@ -42,6 +43,7 @@ public abstract class MessageMediaItem extends MessageItem {
             float widthToHeightRatio = MediaUtils.getWidthToHeightRatio(getMediaMessage().getUrl(), context);
             date = DateUtils.getTimestamp(context, message.getDate());
             final String mediaUrl = getMediaMessage().getUrl();
+            final Object mediaSource = getMediaMessage().getImageSource();
             this.avatarUrl = message.getAvatarUrl();
             this.avatarSource = message.getAvatarSource();
 
@@ -66,7 +68,11 @@ public abstract class MessageMediaItem extends MessageItem {
             messageMediaViewHolder.initials.setText(initials != null ? initials : "");
 
             messageMediaViewHolder.media.setWidthToHeightRatio(widthToHeightRatio);
-            messageMediaViewHolder.media.setImageUrlToLoadOnLayout(mediaUrl);
+            if(mediaSource != null) {
+                messageMediaViewHolder.media.setImageSourceToLoadOnLayout(mediaSource);
+            } else {
+                messageMediaViewHolder.media.setImageUrlToLoadOnLayout(mediaUrl);
+            }
 
             messageViewHolder.avatar.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -82,6 +88,9 @@ public abstract class MessageMediaItem extends MessageItem {
                 public void onClick(View view) {
                     Intent intent = new Intent(context, ViewImageActivity.class);
                     intent.putExtra("URL", mediaUrl);
+                    if(mediaSource instanceof Parcelable) {
+                        intent.putExtra("SOURCE", (Parcelable) mediaSource);
+                    }
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     context.startActivity(intent);
                 }
@@ -90,7 +99,7 @@ public abstract class MessageMediaItem extends MessageItem {
             messageMediaViewHolder.avatar.setVisibility(isFirstConsecutiveMessageFromSource && (!TextUtils.isEmpty(avatarUrl) || avatarSource != null)  ? View.VISIBLE : View.INVISIBLE);
             messageMediaViewHolder.avatarContainer.setVisibility(isFirstConsecutiveMessageFromSource ? View.VISIBLE : View.INVISIBLE);
             messageMediaViewHolder.initials.setVisibility(isFirstConsecutiveMessageFromSource && (TextUtils.isEmpty(avatarUrl) && avatarSource == null) ? View.VISIBLE : View.GONE);
-            messageMediaViewHolder.media.setVisibility(!TextUtils.isEmpty(mediaUrl) ? View.VISIBLE : View.INVISIBLE);
+            messageMediaViewHolder.media.setVisibility(!(TextUtils.isEmpty(mediaUrl) && mediaSource == null) ? View.VISIBLE : View.INVISIBLE);
             messageMediaViewHolder.timestamp.setVisibility(isLastConsecutiveMessageFromSource ? View.VISIBLE : View.GONE);
         }
     }

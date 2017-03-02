@@ -11,6 +11,7 @@ import it.slyce.messaging.message.messageItem.internalUser.media.MessageInternal
  */
 public class MediaMessage extends Message {
     private String url;
+    private Object imageSource;
 
     public String getUrl() {
         return url;
@@ -18,6 +19,14 @@ public class MediaMessage extends Message {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public Object getImageSource() {
+        return imageSource;
+    }
+
+    public void setImageSource(Object imageSource) {
+        this.imageSource = imageSource;
     }
 
     @Override

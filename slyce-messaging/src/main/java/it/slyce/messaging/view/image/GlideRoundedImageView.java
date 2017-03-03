@@ -49,8 +49,13 @@ public class GlideRoundedImageView extends FixedAspectRatioRoundedImageView {
         // Track that the view has been laid out
         mViewHasLaidOut = true;
 
-        // Attempt to load the image URL
-        loadImageUrl();
+        if(mSourceImageSource != null) {
+            // Attempt to load the image source
+            loadImageSource();
+        } else {
+            // Attempt to load the image URL
+            loadImageUrl();
+        }
     }
 
     public void setImageUrlToLoadOnLayout(String sourceImageUrl) {
@@ -92,8 +97,8 @@ public class GlideRoundedImageView extends FixedAspectRatioRoundedImageView {
 
     private void loadImageSource() {
         // If the view has been laid out (has width/height), and hasn't been loaded yet, attempt to load it
-        if (mViewHasLaidOut && !mHasStartedImageLoad && mSourceImageSource != null) {
-            if (mSourceImageUrl != null) {
+        if (mViewHasLaidOut && !mHasStartedImageLoad) {
+            if (mSourceImageSource != null) {
                 Glide
                         .with(getContext())
                         .load(mSourceImageSource)

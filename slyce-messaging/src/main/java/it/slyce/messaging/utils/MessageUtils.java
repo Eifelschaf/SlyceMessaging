@@ -32,7 +32,9 @@ public class MessageUtils {
     }
 
     private static boolean previousMessageIsFromAnotherSender(int i, List<MessageItem> messageItems) {
-        return messageItems.get(i - 1).getMessageSource() != messageItems.get(i).getMessageSource();
+        MessageItem messageItem = messageItems.get(i);
+        MessageItem previousMessageItem = messageItems.get(i - 1);
+        return previousMessageItem.getMessageSource() != messageItem.getMessageSource() || !previousMessageItem.getMessage().getUserId().equals(messageItem.getMessage().getUserId());
     }
 
     private static boolean previousMessageIsSpinner(int i, List<MessageItem> messageItems) {

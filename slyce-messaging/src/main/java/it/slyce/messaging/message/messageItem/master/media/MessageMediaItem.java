@@ -54,6 +54,7 @@ public abstract class MessageMediaItem extends MessageItem {
                     loadRequest = requestManager.load(avatarUrl);
                 } else if (this.avatarSource != null) {
                     loadRequest = requestManager.load(avatarSource);
+                    loadRequest.dontAnimate();
                 }
                 if(loadRequest != null) {
                     Drawable placeholder = message.getAvatarPlaceholder();

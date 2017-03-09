@@ -44,7 +44,7 @@ public class ScrollUtils {
         } else if (position == mRecyclerAdapter.getItemCount() - 1) {
             goalPosition = mRecyclerView.computeVerticalScrollRange();
         } else {
-            goalPosition = 100000000; // this will cause scrollToPosition() to be called, which we want
+            goalPosition = SMOOTH_SCROLL_IF_THIS_MUCH; // this will cause scrollToPosition() to be called, which we want
         }
         return Math.abs(scrollPosition - goalPosition);
     }

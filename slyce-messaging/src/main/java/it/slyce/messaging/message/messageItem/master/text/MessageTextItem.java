@@ -53,6 +53,7 @@ public class MessageTextItem extends MessageItem {
                     loadRequest = requestManager.load(avatarUrl);
                 } else if (this.avatarSource != null) {
                     loadRequest = requestManager.load(avatarSource);
+                    loadRequest.dontAnimate();
                 }
                 if(loadRequest != null) {
                     Drawable placeholder = message.getAvatarPlaceholder();
